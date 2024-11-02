@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, desc, func
-from database import Base, SessionLocal
+from database.database import Base, SessionLocal
 
 
 

@@ -4,11 +4,11 @@ from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, func
 
-from database import SessionLocal
-from table_user import User
-from table_post import Post
-from table_feed import Feed
-from schema import UserGet, PostGet, FeedGet
+from database.database import SessionLocal
+from database.models.user import User
+from database.models.post import Post
+from database.models.feed import Feed
+from schemas.schema import UserGet, PostGet, FeedGet
 
 app = FastAPI()
 

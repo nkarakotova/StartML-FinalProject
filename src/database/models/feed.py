@@ -1,8 +1,8 @@
 from sqlalchemy import Column, Integer, String, TIMESTAMP, ForeignKey
 from sqlalchemy.orm import relationship
-from database import Base
-from user import User
-from post import Post
+from database.database import Base
+from database.models.user import User
+from database.models.post import Post
 
 
 
