@@ -9,5 +9,6 @@ def get_model_path(path: str) -> str:
     return MODEL_PATH
 
 def load_models():
-    model_path = get_model_path("/my/super/path")
-    model = pickle.load(model_path)
+    model_path = get_model_path("sklearn_model.pkl")
+    model = pickle.load(open(model_path, 'rb'))
+    return model
