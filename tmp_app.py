@@ -111,7 +111,7 @@ def load_features():
 
     post_query = """
     SELECT *
-    FROM post_text_df;
+    FROM post_process_features;
     """
     posts = batch_load_sql(post_query)
 
@@ -129,7 +129,7 @@ def load_features():
 model = load_models()
 users_features, posts_features, likes = load_features()
 
-def get_recommended_posts(id: int, limit: int):
+def get_recommended_posts(id: int, time: datetime, limit: int):
 
     user_features = users_features.loc[users_features.user_id == id]
     user_features = user_features.drop('user_id', axis=1)
@@ -138,7 +138,12 @@ def get_recommended_posts(id: int, limit: int):
     posts_features['key'] = 1
 
     user_posts_features = posts_features.drop('text', axis=1).merge(user_features, on='key').drop('key', axis=1).set_index('post_id')
-    
+    user_posts_features["hour"] = time.hour
+
+    categorical_features = ['topic', 'hour', 'city', 'country', 'exp_group', 'gender', 'source', 'os']
+
+    all_features = categorical_features + [col for col in user_posts_features.columns if col not in categorical_features]
+    user_posts_features = user_posts_features[all_features]
     
     predicts = model.predict_proba(user_posts_features)[:, 1]
     user_posts_features['predicts'] = predicts
@@ -160,4 +165,4 @@ def get_recommended_posts(id: int, limit: int):
 
 @app.get("/post/recommendations/", response_model=List[PostGet])
 def recommended_posts(id: int, time: datetime, limit: int = 10) -> List[PostGet]:
-    return get_recommended_posts(id, limit)
+    return get_recommended_posts(id, time, limit)

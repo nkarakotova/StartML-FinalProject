@@ -1,20 +1,15 @@
 import pandas as pd
 from sqlalchemy import create_engine
-import xgboost as xgb
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
 import pickle
-from category_encoders import TargetEncoder
 from catboost import CatBoostClassifier
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 db_url = "postgresql://robot-startml-ro:pheiph0hahj1Vaif@postgres.lab.karpov.courses:6432/startml"
 engine = create_engine(db_url)
 
 def load_user_data():
     query = """
-    SELECT user_id, age, gender, city, country, exp_group, os, source
+    SELECT *
     FROM user_data;
     """
 
@@ -26,7 +21,7 @@ def load_user_data():
 
 def load_post_data():
     query = """
-    SELECT post_id, text, topic
+    SELECT *
     FROM post_text_df;
     """
 
@@ -63,7 +58,22 @@ user_data = load_user_data()
 post_data = load_post_data()
 feed_data = load_feed_data()
 
+stop_words = pd.read_csv('stop_words.csv')['word'].values.tolist()
+
+vectorizer = TfidfVectorizer(stop_words=stop_words,
+                             max_features=30,
+                             max_df=0.95,
+                             min_df=0.01)
+
+X_tfidf = vectorizer.fit_transform(post_data['text']).toarray()
+tfidf_df = pd.DataFrame(X_tfidf, columns=vectorizer.get_feature_names_out())
+
+post_data = pd.concat([post_data, tfidf_df], axis=1)
+post_data.to_sql('post_process_features', con=engine, if_exists='replace')
 post_data = post_data.drop(columns=['text'])
+
+feed_data['timestamp'] = pd.to_datetime(feed_data['timestamp'])
+feed_data['hour'] = feed_data['timestamp'].dt.hour
 feed_data = feed_data.drop(columns=['timestamp'])
 
 def merge_data(user_data, post_data, feed_data):
@@ -76,29 +86,19 @@ def merge_data(user_data, post_data, feed_data):
 merged_data = merge_data(user_data, post_data, feed_data)
 merged_data = merged_data.drop(columns=['user_id', 'post_id'])
 
-categorical_features = ['city', 'source', 'os', 'gender', 'country', 'exp_group', 'topic']
-
-# categorical_features_OHE = ['source', 'os', 'gender', 'country', 'exp_group', 'topic']
-# categorical_features_TE  = ['city']
-
-# t = [
-#     ('OneHotEncoder', OneHotEncoder(), categorical_features_OHE),
-#     ('MeanTargetEncoder', TargetEncoder(), categorical_features_TE)
-# ]
-
-# column_transformer = ColumnTransformer(transformers=t)
+categorical_features = ['topic', 'hour', 'city', 'country', 'exp_group', 'gender', 'source', 'os']
 
 X = merged_data.drop(columns=['target'])
+all_features = categorical_features + [col for col in X.columns if col not in categorical_features]
+X = X[all_features]
+
 y = merged_data['target']
 
-# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+print(X['topic'].unique)
 
-# model = Pipeline(steps=[
-#     ('column_transformer', column_transformer),
-#     ('classifier', xgb.XGBClassifier(objective='binary:logistic', eval_metric='logloss'))
-# ])
-
-model = CatBoostClassifier()
+model = CatBoostClassifier(iterations=100,
+                           depth=6,
+                           learning_rate=0.1)
 
 model.fit(X, y, categorical_features)
 
