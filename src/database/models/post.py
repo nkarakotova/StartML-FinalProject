@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, desc
-from database import Base, SessionLocal
+
+from src.database.database import Base, SessionLocal
 
 
 

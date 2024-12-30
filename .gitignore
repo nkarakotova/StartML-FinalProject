@@ -1,4 +1,6 @@
 *__pycache__
 *.DS_Store
 venv
+*drawio.bkp
+*catboost_info*
 
