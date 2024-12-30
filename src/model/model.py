@@ -31,6 +31,18 @@ def load_post_data():
     
     return post_data
 
+def load_post_data_dl():
+    query = """
+    SELECT *
+    FROM post_process_features_dl;
+    """
+
+    conn = engine.connect().execution_options(stream_results=True)
+    post_data = pd.read_sql(query, conn)
+    conn.close()
+    
+    return post_data
+
 def load_feed_data():
     CHUNKSIZE = 100000
 
@@ -55,24 +67,32 @@ def load_feed_data():
     return pd.concat(chunks, ignore_index=True)
 
 user_data = load_user_data()
-post_data = load_post_data()
+# post_data = load_post_data()
+post_data = load_post_data_dl()
 feed_data = load_feed_data()
 
-stop_words = pd.read_csv('stop_words.csv')['word'].values.tolist()
 
-vectorizer = TfidfVectorizer(stop_words=stop_words,
-                             max_features=30,
-                             max_df=0.95,
-                             min_df=0.01)
+# Работа с текстом во 2м модуле
 
-X_tfidf = vectorizer.fit_transform(post_data['text']).toarray()
-tfidf_df = pd.DataFrame(X_tfidf, columns=vectorizer.get_feature_names_out())
+# stop_words = pd.read_csv('stop_words.csv')['word'].values.tolist()
 
-post_data = pd.concat([post_data, tfidf_df], axis=1)
-post_data.to_sql('post_process_features', con=engine, if_exists='replace')
+# vectorizer = TfidfVectorizer(stop_words=stop_words,
+#                              max_features=30,
+#                              max_df=0.95,
+#                              min_df=0.01)
+ 
+# X_tfidf = vectorizer.fit_transform(post_data['text']).toarray()
+# tfidf_df = pd.DataFrame(X_tfidf, columns=vectorizer.get_feature_names_out())
+
+# post_data = pd.concat([post_data, tfidf_df], axis=1)
+# post_data.to_sql('post_process_features', con=engine, if_exists='replace')
+
+# !Работа с текстом во 2м модуле
+
 post_data = post_data.drop(columns=['text'])
 
 feed_data['timestamp'] = pd.to_datetime(feed_data['timestamp'])
+
 feed_data['hour'] = feed_data['timestamp'].dt.hour
 feed_data = feed_data.drop(columns=['timestamp'])
 

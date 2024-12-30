@@ -117,7 +117,7 @@ def load_features():
 
     post_query = """
     SELECT *
-    FROM post_process_features;
+    FROM post_process_features_dl;
     """
     posts = batch_load_sql(post_query)
 
