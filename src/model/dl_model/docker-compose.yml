@@ -4,7 +4,7 @@ services:
   app:
     build: .
     volumes:
-      - .:/model
+      - .:/model_test
     environment:
       - PYTHONUNBUFFERED=1
-    command: ["python", "model.py"]
+    command: ["python", "model_test.py"]
