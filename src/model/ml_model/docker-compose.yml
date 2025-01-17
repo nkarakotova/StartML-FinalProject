@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    volumes:
+      - .:/model_control
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: ["python", "model_control.py"]

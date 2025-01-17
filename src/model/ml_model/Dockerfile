@@ -18,19 +18,19 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean
 
 # Устанавливаем рабочую директорию для приложения (директория /app)
-WORKDIR /model
+WORKDIR /model_control
 
 # Копируем все файлы из текущей директории в /app
-COPY . /model
+COPY . /model_control
 
 # Устанавливаем необходимые версии pip и setuptools
 RUN pip install --upgrade pip setuptools
 
 # Устанавливаем зависимости из requirements.txt
-RUN pip install --no-cache-dir -r /model/requirements.txt
+RUN pip install --no-cache-dir -r /model_control/requirements.txt
 
 # Устанавливаем Uvicorn
 RUN pip install uvicorn
 
 # Указываем команду для запуска приложения с помощью Uvicorn
-CMD ["python", "model.py"]
+CMD ["python", "model_control.py"]

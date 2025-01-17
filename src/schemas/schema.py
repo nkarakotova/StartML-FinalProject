@@ -1,4 +1,5 @@
-import datetime
+from typing import List
+from datetime import datetime
 
 from pydantic import BaseModel
 
@@ -26,11 +27,16 @@ class PostGet(BaseModel):
         orm_mode = True
 
 
+class Response(BaseModel):
+    exp_group: str
+    recommendations: List[PostGet]
+
+
 class FeedGet(BaseModel):
     action: str
     post_id: int
     post: PostGet
-    time: datetime.datetime
+    time: datetime
     user_id: int
     user: UserGet
 
