@@ -18,6 +18,8 @@ from src.schemas.schema import UserGet, PostGet, FeedGet, Response
 
 app = FastAPI()
 
+SQLALCHEMY_DATABASE_URL = f"postgresql://{os.getenv('PG_USER', '')}:{os.getenv('PG_PASS', '')}@{os.getenv('PG_HOST')}:{os.getenv('PG_PORT')}/{os.getenv('PG_DB')}"
+
 
 
 def get_db():
@@ -102,10 +104,7 @@ def load_models():
 
 def batch_load_sql(query: str) -> pd.DataFrame:
     CHUNKSIZE = 200000
-    engine = create_engine(
-        "postgresql://robot-startml-ro:pheiph0hahj1Vaif@"
-        "postgres.lab.karpov.courses:6432/startml"
-    )
+    engine = create_engine(SQLALCHEMY_DATABASE_URL)
     conn = engine.connect().execution_options(stream_results=True)
     chunks = []
     for chunk_dataframe in pd.read_sql(query, conn, chunksize=CHUNKSIZE):

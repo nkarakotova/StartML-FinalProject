@@ -1,10 +1,11 @@
+import os
 import pandas as pd
 from sqlalchemy import create_engine
 import pickle
 from catboost import CatBoostClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-db_url = "postgresql://robot-startml-ro:pheiph0hahj1Vaif@postgres.lab.karpov.courses:6432/startml"
+db_url = f"postgresql://{os.getenv('PG_USER', '')}:{os.getenv('PG_PASS', '')}@{os.getenv('PG_HOST')}:{os.getenv('PG_PORT')}/{os.getenv('PG_DB')}"
 engine = create_engine(db_url)
 
 def load_user_data():
