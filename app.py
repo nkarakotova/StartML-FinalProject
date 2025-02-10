@@ -1,7 +1,7 @@
 from typing import List
 
 from fastapi import Depends, FastAPI, HTTPException
-from sqlalchemy.orm import Session
+from alchemy.orm import Session
 from sqlalchemy import desc, func
 from datetime import datetime
 from sqlalchemy import create_engine
@@ -142,10 +142,10 @@ def load_features():
 
 
 def get_exp_group(user_id: int) -> str:
-    temp_exp_group = int(int(hashlib.md5((str(user_id) + 'my_salt').encode()).hexdigest(), 16) % 100)
-    if temp_exp_group <= 50:
+    temp_exp_group = int(hashlib.md5((str(user_id) + 'my_salt').encode()).hexdigest(), 16) % 100
+    if temp_exp_group < 50:
         exp_group = 'control'
-    elif temp_exp_group > 50:
+    elif temp_exp_group >= 50:
         exp_group = 'test'
     return exp_group
 
